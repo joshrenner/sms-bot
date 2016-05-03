@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Target 4 Business</title>
+    <style>
+        /* UTILITIES */
+        .hidden {
+            display: none;
+        }
+
+        /* BASE */
+        a {
+            cursor: pointer;
+        }
+        ::-moz-placeholder { color: #777; }
+        ::-webkit-input-placeholder { color: #777; }
+        html {
+            background-color: #ADAEAF;
+            background-image: url(http://api.thumbr.it/whitenoise-361x370.png?background=aeafb0ff&noise=f0f0f0&density=40&opacity=28);
+        }
+        body {
+            margin: 0;
+            min-width: 100%;
+            min-height: 100%;
+            font: 18px/1.6 sans-serif;
+            text-align: left;
+            background: -webkit-radial-gradient(bottom, ellipse farthest-side, rgba(255,255,255,.25) 0%, rgba(255,255,255,0) 70%);
+            background: radial-gradient(ellipse farthest-side at bottom, rgba(255,255,255,.25) 0%, rgba(255,255,255,0) 70%);
+        }
+        #container {
+            display: -webkit-flex;
+            display: flex;
+            -webkit-flex-flow: column-reverse nowrap;
+            flex-flow: column-reverse nowrap;
+            -webkit-justify-content: flex-start;
+            justify-content: flex-start;
+            align-items: stretch;
+            width: 300px;
+            height: 100vh;
+            position: relative;
+            margin: 0 auto;
+        }
+
+        /* INPUT & BUTTON */
+        #input {
+            position: relative;
+            padding-bottom: 1rem;
+        }
+        #request {
+            box-sizing: border-box;
+            width:100%;
+            height: 4rem;
+            font: 18px/1.6 sans-serif;
+            padding: .15em .5em;
+            background: rgba(0, 0, 0, 0.15);
+            color: #333;
+            text-shadow: 0 1px 1px rgba(255, 255, 255, 0.4);
+            border: 1px solid rgba(0, 0, 0, 0.2);
+            border-radius: 4px;
+            box-shadow: 0 1px 1px 0 rgba(255, 255, 255, 0.3), inset 0 1px 5px rgba(0, 0, 0, 0.1);
+        }
+        #request:focus {
+            outline: rgba(233, 245, 255, 0.5) 1px;
+        }
+
+        /* actions */
+        .button {
+            display: inline-block;
+            line-height: 2;
+            font-weight: bold;
+            font-size: 1rem;
+            text-transform: uppercase;
+            text-align: center;
+        }
+        .button:not([disabled]) {
+            cursor: pointer;
+        }
+        .button:disabled {
+            cursor: not-allowed;
+        }
+        #send {
+            position: relative;
+            width: 80%;
+        }
+        #send:after {
+            content: "pssst: at least 2 characters";
+            position: absolute;
+            width: 100%;
+            top: -2.8em;
+            left: 0;
+            text-transform: lowercase;
+            font-weight: normal;
+            font-size: .8rem;
+            color: #8E6A6A;
+            background-color: antiquewhite;
+            display: none;
+        }
+        #send:disabled:hover:after {
+            display: block;
+        }
+        #end {
+            width: 18%;
+            padding: 0;
+            background: none;
+            border: none;
+        }
+        #end svg {
+            width: 100%;
+            margin: -20px 0;
+        }
+        #end:hover path {
+            fill: #888;
+        }
+
+        /* HINT */
+        #trigger {
+            position: absolute;
+            top: -.5rem;
+            right: -.5rem;
+            cursor: pointer;
+            opacity: .8;
+            padding: 4px;
+            color: #5AA8FF;
+            font-weight: bold;
+        }
+        #hint {
+            position: absolute;
+            z-index: 1;
+            top: -6rem;
+            right: -1rem;
+            margin: 0;
+            padding: .25rem .5rem;
+            list-style-type: none;
+            font-size: .8rem;
+            color: #8E6A6A;
+            background-color: #FFF2BF;
+            border: 2px solid #FFDCAE;
+            border-radius: 6px;
+            visibility: hidden;
+            opacity: 0;
+            transition: visibility 0s linear 0.2s, opacity 0.2s linear;
+            box-shadow: 0px 2px 10px 0px rgba(126,125,156,0.8);
+            text-align: left;
+        }
+        #hint.show {
+            visibility: visible;
+            opacity: 1;
+            transition-delay: 0s;
+        }
+        #hint:after,
+        #hint:before {
+            top: 100%;
+            border: solid transparent;
+            content: " ";
+            height: 0;
+            width: 0;
+            position: absolute;
+            pointer-events: none;
+        }
+        #hint:after {
+            right: 8px;
+            border-color: rgba(250, 235, 215, 0);
+            border-top-color: #FFF2BF;
+            border-width: 8px;
+            margin-left: -8px;
+        }
+        #hint:before {
+            right: 5px;
+            border-color: rgba(255, 220, 174, 0);
+            border-top-color: #FFDCAE;
+            border-width: 11px;
+            margin-left: -11px;
+        }
+        #hint kbd {
+            background: #fff;
+            text-align: center;
+            vertical-align: middle;
+            display: inline-block;
+            padding: .25em .5em;
+            min-width: 1.25em;
+            border: #D0C3C3 solid 1px;
+            border-radius: .5em;
+            color: black;
+            margin: .15em .05em;
+        }
+        #hint li:first-child kbd {
+            width: 4em;
+        }
+
+        /* TRANSCRIPT */
+        #transcript {
+            display: -webkit-flex;
+            display: flex;
+            -webkit-flex-flow: column nowrap;
+            flex-flow: column nowrap;
+            -webkit-justify-content: flex-start;
+            justify-content: flex-start;
+            -webkit-align-items: stretch;
+            align-items: stretch;
+            padding: 0;
+            list-style: none;
+        }
+        #transcript li {
+            position: relative;
+            padding: .4rem .8rem;
+            margin: .5rem 1rem;
+            border-radius: .4rem;
+            border: 1px solid transparent;
+            animation: bubble .2s;
+        }
+        #transcript img {
+            max-width: 100%;
+        }
+        #transcript li:after,
+        #transcript li:before {
+            top: 50%;
+            border: solid transparent;
+            content: " ";
+            height: 0;
+            width: 0;
+            position: absolute;
+            pointer-events: none;
+        }
+        #transcript li:after {
+            border-width: 8px;
+            margin-top: -8px;
+        }
+        #transcript li:before {
+            border-width: 9px;
+            margin-top: -9px;
+        }
+        #transcript .voice-0 {
+            margin-right: 2rem;
+            background-color: rgba(0, 0, 0, 0.15);
+            border-color: #888;
+            color: #666;
+            text-shadow: 0 1px 1px rgba(255, 255, 255, 0.4);
+        }
+
+        #transcript .voice-0:after,
+        #transcript .voice-0:before {
+            right: 100%;
+        }
+        #transcript .voice-0:after {
+            border-color: rgba(240, 248, 255, 0);
+            border-right-color: #989899;
+        }
+        #transcript .voice-0:before {
+            border-color: rgba(219, 227, 234, 0);
+            border-right-color: #888;
+        }
+
+        #transcript .voice-1 {
+            margin-left: 2rem;
+            background-color: rgba(136,183,213,.5);
+            color: #CEEBFF;
+            border-color: #c2e1f5;
+            text-shadow: 0 1px 1px rgba(0, 0, 0, 0.4);
+        }
+        #transcript .voice-1:after,
+        #transcript .voice-1:before {
+            left: 100%;
+        }
+        #transcript .voice-1:after {
+            border-color: rgba(136, 183, 213, 0);
+            border-left-color: #A1B8C7;
+        }
+        #transcript .voice-1:before {
+            border-color: rgba(194, 225, 245, 0);
+            border-left-color: #c2e1f5;
+        }
+
+        #transcript .voice-2 {
+            margin-left: 2rem;
+            margin-right: 2rem;
+            background-color: rgba(226, 123, 80, 0.5);
+            color: #946464;
+            border-color: #A77676;
+            text-shadow: 0 1px 1px rgba(251, 230, 230, 0.8);
+        }
+
+        @keyframes bubble {
+            from { transform: scale(0,0); }
+            to { transform: scale(1,1); }
+        }
+
+        /* ERROR MODAL */
+        .trigger {
+            clear: left;
+            display: inline-block;
+        }
+        .wrap {
+            position: fixed;
+            height: 96vh;
+            overflow-x: scroll;
+            border: 1px solid #A77676;
+            top: 2vh;
+            left: 2vw;
+            width: 96vw;
+            z-index: 2;
+            box-shadow: 0px 0px 25px 5px rgba(50,63,74,0.5);
+        }
+        .close {
+            position: fixed;
+            z-index: 3;
+            top: 1vh;
+            right: 1vh;
+            text-transform: uppercase;
+            font-size: 2.5rem;
+            padding: 0;
+            line-height: .5;
+            color: #946464;
+            background-color: #D6BFBF;
+            border: 2px solid #946464;
+            border-radius: 1rem;
+            overflow: hidden;
+            width: 2rem;
+            height: 2rem;
+            cursor: pointer;
+            box-shadow: 0px 0px 2px rgba(86, 86, 86, 0.8);
+        }
+        .close:hover {
+            color: #901A1A;
+            border-color: #901A1A;
+        }
+    </style>
+</head>
+<body>
+<div id="container">
+    <div id="input">
+        <textarea id="request" placeholder="thin black marker"></textarea>
+        <button id="send" class="button" disabled>send your request</button>
+        <button id="end" class="button" title="Ship it! Close out the orders"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" x="0px" y="0px" viewBox="0 0 100 100" enable-background="new 0 0 100 100" xml:space="preserve"><g><path d="M22.182,24.515c-3.365,0-6.192,2.173-7.182,5.221c-0.48,1.411-0.48,2.766-0.48,4.318h-2.148   c-1.244,0.085-2.318,1.27-2.262,2.54c0.057,1.242,1.272,2.314,2.517,2.258h27.876c1.272,0,2.432-1.129,2.432-2.399   s-1.159-2.399-2.432-2.399H19.298v-2.116c0-1.468,1.187-2.653,2.884-2.653h46.479l16.455,23.594v6.576   c0,1.439-1.188,2.652-2.884,2.652H22.182c-1.697,0-2.884-1.213-2.884-2.652v-1.496h9.273c1.244,0.027,2.403-1.129,2.403-2.398   c0-1.242-1.159-2.4-2.403-2.371H13.163c-1.244,0.057-2.318,1.27-2.262,2.512c0.084,1.242,1.272,2.314,2.516,2.258h1.103   c0,1.383,0.142,2.455,0.453,3.584c0.876,2.963,3.562,5.137,6.729,5.334c0.283,4.826,4.467,8.607,9.415,8.607   c4.947,0,9.132-3.781,9.415-8.58h19.084c0.282,4.799,4.467,8.58,9.387,8.58c4.947,0,9.132-3.781,9.414-8.58h3.817   c4.155,0,7.661-3.301,7.661-7.449v-7.338c0-0.48-0.141-0.988-0.424-1.383L71.856,25.531c-0.453-0.621-1.216-1.016-1.979-1.016   H22.182L22.182,24.515z M65.891,32.897h-6.418c-1.244,0-2.375,1.129-2.375,2.399v12.615c0,1.242,1.131,2.37,2.375,2.37h15.578   c0.849,0,1.696-0.508,2.092-1.27c0.396-0.79,0.34-1.778-0.169-2.483l-8.595-12.277C67.785,33.264,66.937,32.897,65.891,32.897   L65.891,32.897z M61.876,37.667h3.109l5.485,7.846h-8.595V37.667z M12.371,43.622c-1.244,0.057-2.318,1.27-2.262,2.512   c0.057,1.27,1.272,2.343,2.517,2.258h21.515c1.244,0.028,2.432-1.101,2.432-2.371s-1.188-2.427-2.432-2.399H12.371z M26.62,67.074   h9.019c-0.368,2.031-2.149,3.641-4.523,3.641C28.741,70.715,26.988,69.105,26.62,67.074L26.62,67.074z M64.505,67.074h9.02   c-0.368,2.031-2.149,3.641-4.523,3.641C66.626,70.715,64.873,69.105,64.505,67.074L64.505,67.074z"></path></g></svg></button>
+        <button id="trigger">?</button>
+        <ul id="hint">
+            <li><kbd>&#9166;</kbd> to submit your request</li>
+            <li><kbd>&#8593;</kbd> <kbd>&#8595;</kbd> to select previous requests</li>
+        </ul>
+    </div>
+    <ol id="transcript"></ol>
+</div>
+<script>
+    (function() {
+        // constants
+        var GUEST = 0, BOT = 1, UI = 2;
+
+        // assemble our objects
+        var xhr = new XMLHttpRequest(),
+                xml = new DOMParser(),
+                req = document.getElementById('request'),
+                res = document.getElementById('transcript'),
+                act = document.getElementById('send'),
+                end = document.getElementById('end'),
+                hint = document.getElementById('hint'),
+                trig = document.getElementById('trigger'),
+                phoneNumber;
+
+        // the logging mechanism
+        var log = {
+            _log: ["thin black marker"],
+            _i: 0,
+            add: function(request) {
+                log._log.push(request);
+                log._i = log._log.length;
+            },
+            back: function() {
+                if (log._i <= 0)
+                    log._i = 0;
+                else
+                    log._i = log._i - 1;
+                return log.request();
+            },
+            forward: function() {
+                if (log._i >= log._log.length - 1)
+                    log._i = log._log.length - 1;
+                else
+                    log._i = log._i + 1;
+                return log.request();
+
+            },
+            request: function() {
+                return log._log[log._i];
+            }
+        };
+
+        // transcribe the conversation
+        function updateTranscript (message, speaker) {
+            var dom = document.createElement('li');
+            dom.setAttribute('class', 'voice-' + speaker);
+            if (typeof message === 'string')
+                dom.innerHTML = message;
+            else
+                dom.appendChild(message);
+            res.appendChild(dom);
+            if (speaker === GUEST)
+                log.add(message);
+        }
+
+        // display error in the ui
+        function displayError () {
+            var dom = document.createElement('div');
+            dom.innerHTML = 'There was an error :(';
+
+            var dom1 = document.createElement('a');
+            dom1.setAttribute('class', 'trigger');
+            dom1.innerHTML = "view the error";
+            var dom2 = document.createElement('div');
+            dom2.setAttribute('class', 'wrap');
+            dom2.setAttribute('style', 'display: none;');
+            dom2.innerHTML = xhr.responseText;
+            var dom3 = document.createElement('button');
+            dom3.setAttribute('class', 'close');
+            dom3.setAttribute('style', 'display: none;');
+            dom3.innerText = "x";
+
+            dom1.onclick = function(){
+                dom2.removeAttribute('style');
+                dom3.removeAttribute('style');
+            };
+            dom3.onclick = function(){
+                dom2.setAttribute('style', 'display: none;');
+                dom3.setAttribute('style', 'display: none;');
+            };
+            dom.appendChild(dom1);
+            dom.appendChild(dom2);
+            dom.appendChild(dom3);
+            return dom;
+        }
+
+        // handle the response & place feedback into document
+        function displayResponse () {
+            var msg = xml.parseFromString(xhr.responseText,'text/xml').getElementsByTagName('Message')[0],
+                    voice = BOT;
+            if (msg === undefined || msg.childNodes[0] === undefined) {
+                msg = displayError();
+                voice = UI;
+            }
+            else {
+                var body = msg.getElementsByTagName('Body')[0].innerHTML.replace('REPLY: ', '').replace('\n', '<br>'),
+                        media = msg.getElementsByTagName('Media')[0];
+
+                if (media) {
+                    var d1 = document.createElement('div'),
+                            d2 = document.createElement('img'),
+                            d3 = document.createElement('p');
+                    d2.setAttribute('src', media.innerHTML);
+                    d3.innerText = body;
+                    d1.appendChild(d2);
+                    d1.appendChild(d3);
+                    msg = d1;
+                }
+                else {
+                    msg = body;
+                }
+            }
+            updateTranscript(msg, voice);
+            act.innerText = 'reply';
+            req.focus();
+        }
+        function displayList () {
+            var msg = xhr.responseText.replace('\n', '<br>'),
+                    voice = BOT;
+            updateTranscript(msg, voice);
+            act.innerText = 'reply';
+            req.focus();
+        }
+
+        // send a request
+        function submitRequest () {
+            var message = req.value;
+            // set the dom state
+            req.value = '';
+            act.innerText = 'working on it...';
+            act.setAttribute('disabled', 'true');
+            // add message to transcript
+            updateTranscript(message, GUEST);
+            // prepare the request object
+            xhr.open('POST', '/sms');
+            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+            // make the request
+            xhr.onload = displayResponse;
+            xhr.send('Body=' + message + '&From=' + phoneNumber);
+        }
+
+        // close out transactions
+        function closeOut () {
+            // prepare the request object
+            xhr.open('GET', '/end');
+            // make the request
+            xhr.onload = displayList;
+            xhr.send();
+        }
+
+        // validate the request
+        function isRequestValid () {
+            return req.value.length >= 2;
+        }
+
+        // submit the request
+        function onEnterText () {
+            // set appropriate button state
+            if (isRequestValid())
+                act.removeAttribute('disabled');
+            else
+                act.setAttribute('disabled', 'true');
+        }
+
+        // handle key commands
+        function onKeyboardCommand (event) {
+            switch (event.keyCode) {
+                case 13:
+                    event.preventDefault();
+                    if (isRequestValid())
+                        submitRequest();
+                    break;
+                case 38:
+                    req.value = log.back();
+                    break;
+                case 40:
+                    req.value = log.forward();
+                    break;
+            }
+            req.focus();
+        }
+
+        // hint
+        function showHint () {
+            hint.setAttribute('class', 'show');
+        }
+        function hideHint () {
+            hint.removeAttribute('class');
+        }
+
+        // random phone number
+        function generatePhoneNumber () {
+            phoneNumber = Math.floor(100 + Math.random() * 900) * 10000000 + 5550100;
+        }
+
+        // set it in motion
+        act.onclick = submitRequest;
+        end.onclick = closeOut;
+        req.onkeyup = onEnterText;
+        req.onkeydown = onKeyboardCommand;
+        trig.onmouseover = showHint;
+        trig.onmouseout = hideHint;
+        generatePhoneNumber();
+        req.focus();
+    })();
+</script>
+</body>
+</html>
